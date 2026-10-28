@@ -77,6 +77,9 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
     // The Web API's GET /tracks accepts at most 50 ids
     private static final int TRACKS_BATCH_SIZE = 50;
     private static final int SEARCH_LIMIT = 10;
+    // Track mixes ask the resolver for this many tracks. Spotify's answer for a seed never changes,
+    // so a single track makes autoplay bounce between the same two songs.
+    private static final int MIX_RECOMMENDATIONS_LIMIT = 20;
     // Playlist ids of Spotify-made playlists (editorial, Daily Mix, radios) start with this
     private static final String SPOTIFY_MADE_PLAYLIST_PREFIX = "37i9dQZ";
     public static final Set<AudioSearchResult.Type> SEARCH_TYPES = Set.of(AudioSearchResult.Type.ALBUM,
@@ -368,7 +371,7 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
             // The resolver recommends from tracks only. Album and artist mixes, and track mixes
             // the resolver has no result for, use Spotify's inspired-by mix.
             if ("track".equals(seedType) && this.resolvePlaylistUrl != null) {
-                var recommended = this.getResolverRecommendations("spotify:track:" + seed, 1, preview);
+                var recommended = this.getResolverRecommendations("spotify:track:" + seed, MIX_RECOMMENDATIONS_LIMIT, preview);
                 if (recommended != null) {
                     return recommended;
                 }
