@@ -40,7 +40,7 @@ LRCLIB searches by the loaded track's title and artist and returns plain lyrics,
 Sonara loads Spotify in two ways:
 
 - **Spotify Web API** for tracks, albums, artist top tracks and `spsearch:`. Set `clientId` and `clientSecret` from the [Spotify developer dashboard](https://developer.spotify.com/dashboard).
-- **[Sonara-API](https://github.com/SonaraHQ/Sonora-API)** for playlists and recommendations. Sonara-API is a small self-hosted Spotify resolver. It uses Spotify's web player API, so it also serves Spotify-made playlists (Daily Mix, Discover Weekly, Top 50, radios) and recommendations, which the Web API blocks for newer apps. It also provides the anonymous token endpoint (`/spotifytoken`).
+- **[Sonara-API](https://github.com/SonaraHQ/Sonara-API)** for playlists and recommendations. Sonara-API is a small self-hosted Spotify resolver. It uses Spotify's web player API, so it also serves Spotify-made playlists (Daily Mix, Discover Weekly, Top 50, radios) and recommendations, which the Web API blocks for newer apps. It also provides the anonymous token endpoint (`/spotifytoken`).
 
 There is no public Sonara-API server: host your own (see the Sonara-API README) and point Sonara at it.
 
@@ -72,7 +72,7 @@ Playback modes:
 
 | Source | Access | Notes |
 |--------|--------|-------|
-| Spotify | Mirror | Requires `clientId`/`clientSecret` (or `anonymousTokenUrl`). `resolvePlaylistUrl` points at your [Sonara-API](https://github.com/SonaraHQ/Sonora-API) resolver for playlists and recommendations. See [Spotify](#spotify). |
+| Spotify | Mirror | Requires `clientId`/`clientSecret` (or `anonymousTokenUrl`). `resolvePlaylistUrl` points at your [Sonara-API](https://github.com/SonaraHQ/Sonara-API) resolver for playlists and recommendations. See [Spotify](#spotify). |
 | Amazon Music | Mirror | Requires `apiUrl`, a compatible Amazon Music API server. There is no default. |
 | Apple Music | Mirror | `mediaAPIToken` is optional. |
 | Tidal | Mirror / Direct | Uses the built-in default token; direct streaming also needs hifi-api. |
@@ -146,6 +146,6 @@ Changes in Sonara compared to PulseLink:
 - Renamed to Sonara (packages `com.github.vexify4103.sonara`, plugin `sonara-plugin`, config `plugins.sonara`).
 - LRCLIB synced lyrics without a space after the timestamp no longer fail the whole lyrics request.
 - Bundles a LavaLyrics build where one failing lyrics source no longer fails the whole lookup.
-- Spotify no longer depends on PulseLink's resolver server: tracks, albums, artists and search use the Spotify Web API (`clientId`/`clientSecret`), and playlists and recommendations use your own [Sonara-API](https://github.com/SonaraHQ/Sonora-API) server (`resolvePlaylistUrl`). The `spotify.apiUrl` setting is removed.
+- Spotify no longer depends on PulseLink's resolver server: tracks, albums, artists and search use the Spotify Web API (`clientId`/`clientSecret`), and playlists and recommendations use your own [Sonara-API](https://github.com/SonaraHQ/Sonara-API) server (`resolvePlaylistUrl`). The `spotify.apiUrl` setting is removed.
 - No built-in third-party server addresses: `anonymousTokenUrl` and Amazon Music's new `apiUrl` have no defaults.
 - Credentials in `resolvePlaylistUrl` and `anonymousTokenUrl` are sent as a Basic Authorization header instead of in the request URL.

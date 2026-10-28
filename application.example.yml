@@ -35,7 +35,7 @@ plugins:
       # Used for tracks, albums, artists and search (Spotify Web API), and sent to the Sonara-API resolver as headers to get ISRCs.
       clientId: "your client id"
       clientSecret: "your client secret"
-      # Optional. Your Sonara-API resolver (https://github.com/SonaraHQ/Sonora-API).
+      # Optional. Your Sonara-API resolver (https://github.com/SonaraHQ/Sonara-API).
       # Loads all playlists, including Spotify-made ones (Daily Mix, Top 50, radios) that the Web API blocks,
       # and sprec: recommendations. Without it, user playlists still load through the Web API.
       # Credentials in the URL (https://user:password@host) are sent as a Basic Authorization header.
