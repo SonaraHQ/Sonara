@@ -8,7 +8,7 @@ Sonara is a fork of [PulseLink](https://github.com/ItzRandom23/PulseLink), which
 
 ## Quick Start
 
-1. Add Sonara to your Lavalink `application.yml` with JitPack. Replace `VERSION` with the latest release shown on the badge above (for example `1.0.0`):
+1. Add Sonara to your Lavalink `application.yml` with JitPack. Replace `VERSION` with the latest release shown on the badge above (for example `1.1.0`):
 
 ```yaml
 lavalink:
@@ -16,6 +16,8 @@ lavalink:
     - dependency: "com.github.SonaraHQ:Sonara:VERSION"
       repository: "https://jitpack.io"
 ```
+
+   Or install it by hand: download `sonara-plugin-VERSION.jar` from the [latest release](https://github.com/SonaraHQ/Sonara/releases/latest) and put it in Lavalink's `plugins/` folder. Use one way, not both, or Lavalink loads Sonara twice.
 
 2. Configure Sonara under `plugins.sonara`. Use [`application.example.yml`](https://github.com/SonaraHQ/Sonara/blob/main/application.example.yml) as the full configuration reference.
 3. For Spotify, set up your own [Sonara-API](#spotify) server.
