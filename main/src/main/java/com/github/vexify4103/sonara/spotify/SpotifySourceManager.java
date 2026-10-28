@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li>Tracks, albums, artist top tracks and search use Spotify's Web API with the app credentials
  *   ({@code clientId}/{@code clientSecret}), or the anonymous token when no credentials are set.</li>
- *   <li>Playlists and recommendations use an hfy resolver ({@code resolvePlaylistUrl}) when it is set.
+ *   <li>Playlists and recommendations use a Sonara-API resolver ({@code resolvePlaylistUrl}) when it is set.
  *   It also serves Spotify-made playlists (Daily Mix, Top 50, radios), which the Web API blocks.
  *   Without a resolver, user playlists still load through the Web API.</li>
  * </ul>
@@ -372,7 +372,7 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
         }
 
         if (this.resolvePlaylistUrl == null) {
-            log.warn("Spotify recommendations need resolvePlaylistUrl (an hfy resolver).");
+            log.warn("Spotify recommendations need resolvePlaylistUrl (a Sonara-API resolver).");
             return AudioReference.NO_TRACK;
         }
 
@@ -381,9 +381,9 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
         return recommended == null ? AudioReference.NO_TRACK : recommended;
     }
 
-    // ---- hfy resolver ----
+    // ---- Sonara-API resolver ----
 
-    // Loads any playlist from the hfy resolver. Returns null when it fails, so the Web API is used instead.
+    // Loads any playlist from the Sonara-API resolver. Returns null when it fails, so the Web API is used instead.
     @Nullable
     private AudioItem getPlaylistFromResolver(String id, boolean preview) {
         try {
@@ -454,7 +454,7 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
         var json = this.apiGet("playlists/" + encode(id) + "?market=" + encode(this.countryCode));
         if (json == null || json.get("id").isNull()) {
             if (id.startsWith(SPOTIFY_MADE_PLAYLIST_PREFIX)) {
-                log.warn("Spotify-made playlist {} is not available on the Web API. Set resolvePlaylistUrl to an hfy resolver to load it.", id);
+                log.warn("Spotify-made playlist {} is not available on the Web API. Set resolvePlaylistUrl to a Sonara-API resolver to load it.", id);
             }
             return AudioReference.NO_TRACK;
         }
@@ -660,7 +660,7 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
 
     // ---- Parsing ----
 
-    // Reads a track in the Spotify Web API format (also returned by hfy). Returns null for local files and episodes.
+    // Reads a track in the Spotify Web API format (also returned by Sonara-API). Returns null for local files and episodes.
     @Nullable
     private AudioTrack parseTrack(@Nullable JsonBrowser track, boolean preview) {
         if (track == null || track.isNull() || track.get("is_local").asBoolean(false) || "episode".equals(track.get("type").text())) {

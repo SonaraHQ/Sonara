@@ -32,17 +32,17 @@ plugins:
       lrcLib: true
     spotify:
       # Spotify app credentials from https://developer.spotify.com/dashboard.
-      # Used for tracks, albums, artists and search (Spotify Web API), and sent to the hfy resolver as headers to get ISRCs.
+      # Used for tracks, albums, artists and search (Spotify Web API), and sent to the Sonara-API resolver as headers to get ISRCs.
       clientId: "your client id"
       clientSecret: "your client secret"
-      # Optional. Your hfy resolver (https://github.com/Yanishamburger/hfy).
+      # Optional. Your Sonara-API resolver (https://github.com/SonaraHQ/Sonora-API).
       # Loads all playlists, including Spotify-made ones (Daily Mix, Top 50, radios) that the Web API blocks,
       # and sprec: recommendations. Without it, user playlists still load through the Web API.
       # Credentials in the URL (https://user:password@host) are sent as a Basic Authorization header.
-      # resolvePlaylistUrl: "https://user:password@your-hfy-host"
-      # Optional. Anonymous Spotify token endpoint, for example hfy's /spotifytoken.
+      # resolvePlaylistUrl: "https://user:password@your-sonara-api-host"
+      # Optional. Anonymous Spotify token endpoint, for example Sonara-API's /spotifytoken.
       # Needed for album and artist mixes (sprec:mix:album:/sprec:mix:artist:), and used for the Web API when no clientId is set.
-      # anonymousTokenUrl: "https://user:password@your-hfy-host/spotifytoken"
+      # anonymousTokenUrl: "https://user:password@your-sonara-api-host/spotifytoken"
       countryCode: "US"
       playlistLoadLimit: 6
       albumLoadLimit: 6

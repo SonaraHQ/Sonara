@@ -40,9 +40,9 @@ LRCLIB searches by the loaded track's title and artist and returns plain lyrics,
 Sonara loads Spotify in two ways:
 
 - **Spotify Web API** for tracks, albums, artist top tracks and `spsearch:`. Set `clientId` and `clientSecret` from the [Spotify developer dashboard](https://developer.spotify.com/dashboard).
-- **[hfy](https://github.com/Yanishamburger/hfy)** for playlists and recommendations. hfy is a small self-hosted Spotify resolver. It uses Spotify's web player API, so it also serves Spotify-made playlists (Daily Mix, Discover Weekly, Top 50, radios) and recommendations, which the Web API blocks for newer apps. It also provides the anonymous token endpoint (`/spotifytoken`).
+- **[Sonara-API](https://github.com/SonaraHQ/Sonora-API)** for playlists and recommendations. Sonara-API is a small self-hosted Spotify resolver. It uses Spotify's web player API, so it also serves Spotify-made playlists (Daily Mix, Discover Weekly, Top 50, radios) and recommendations, which the Web API blocks for newer apps. It also provides the anonymous token endpoint (`/spotifytoken`).
 
-There is no public hfy server: host your own (see the hfy README) and point Sonara at it.
+There is no public Sonara-API server: host your own (see the Sonara-API README) and point Sonara at it.
 
 ```yaml
 plugins:
@@ -50,12 +50,12 @@ plugins:
     spotify:
       clientId: "your client id"
       clientSecret: "your client secret"
-      resolvePlaylistUrl: "https://user:password@your-hfy-host"
-      anonymousTokenUrl: "https://user:password@your-hfy-host/spotifytoken"
+      resolvePlaylistUrl: "https://user:password@your-sonara-api-host"
+      anonymousTokenUrl: "https://user:password@your-sonara-api-host/spotifytoken"
 ```
 
 - Without `resolvePlaylistUrl`, user playlists still load through the Web API, but Spotify-made playlists and `sprec:` recommendations do not.
-- With `clientId`/`clientSecret` set, Sonara asks hfy for the `/full` playlist and recommendation routes, which add ISRCs for better mirroring. The credentials are sent as headers, never in the URL.
+- With `clientId`/`clientSecret` set, Sonara asks Sonara-API for the `/full` playlist and recommendation routes, which add ISRCs for better mirroring. The credentials are sent as headers, never in the URL.
 - Credentials in a URL (`https://user:password@host`) are sent as a Basic Authorization header and removed from the request URL, so they do not show up in logs.
 
 The Lavalink lyrics endpoint is provided by the [LavaLyrics plugin](https://github.com/topi314/LavaLyrics); install it alongside Sonara when you need `GET /v4/sessions/{sessionId}/players/{guildId}/track/lyrics`.
@@ -72,7 +72,7 @@ Playback modes:
 
 | Source | Access | Notes |
 |--------|--------|-------|
-| Spotify | Mirror | Requires `clientId`/`clientSecret` (or `anonymousTokenUrl`). `resolvePlaylistUrl` points at your [hfy](https://github.com/Yanishamburger/hfy) resolver for playlists and recommendations. See [Spotify](#spotify). |
+| Spotify | Mirror | Requires `clientId`/`clientSecret` (or `anonymousTokenUrl`). `resolvePlaylistUrl` points at your [Sonara-API](https://github.com/SonaraHQ/Sonora-API) resolver for playlists and recommendations. See [Spotify](#spotify). |
 | Amazon Music | Mirror | Requires `apiUrl`, a compatible Amazon Music API server. There is no default. |
 | Apple Music | Mirror | `mediaAPIToken` is optional. |
 | Tidal | Mirror / Direct | Uses the built-in default token; direct streaming also needs hifi-api. |
@@ -91,8 +91,8 @@ Playback modes:
 
 Credentials and external requirements:
 - No credentials required: Pandora, Gaana, SoundCloud, FloweryTTS
-- Spotify needs `clientId`/`clientSecret`, plus your own hfy server (`resolvePlaylistUrl`) for Spotify-made playlists and recommendations. Amazon Music needs `apiUrl`.
-- Spotify track-mix recommendations (`sprec:mix:track:id`) first ask hfy for one direct recommendation. Album and artist mixes, and track mixes with no direct result, use Spotify's inspired-by mix API, which needs `plugins.sonara.spotify.anonymousTokenUrl` (for example hfy's `/spotifytoken`).
+- Spotify needs `clientId`/`clientSecret`, plus your own Sonara-API server (`resolvePlaylistUrl`) for Spotify-made playlists and recommendations. Amazon Music needs `apiUrl`.
+- Spotify track-mix recommendations (`sprec:mix:track:id`) first ask Sonara-API for one direct recommendation. Album and artist mixes, and track mixes with no direct result, use Spotify's inspired-by mix API, which needs `plugins.sonara.spotify.anonymousTokenUrl` (for example Sonara-API's `/spotifytoken`).
 - Optional overrides: Apple Music `mediaAPIToken`, Tidal `token` or `appId`/`appSecret`, Audiomack `consumerKey` / `consumerSecret`, JioSaavn `decryption`, Pandora `remoteTokenUrl` / `csrfToken` / `authToken`
 - Required credentials: Deezer `arl` and `masterDecryptionKey`, Yandex Music `accessToken`, VK Music `userToken`, Qobuz `userOauthToken`
 - Other required setup: `yt-dlp` installed for yt-dlp, and the new YouTube source plugin for YouTube search / lyrics
@@ -146,6 +146,6 @@ Changes in Sonara compared to PulseLink:
 - Renamed to Sonara (packages `com.github.vexify4103.sonara`, plugin `sonara-plugin`, config `plugins.sonara`).
 - LRCLIB synced lyrics without a space after the timestamp no longer fail the whole lyrics request.
 - Bundles a LavaLyrics build where one failing lyrics source no longer fails the whole lookup.
-- Spotify no longer depends on PulseLink's resolver server: tracks, albums, artists and search use the Spotify Web API (`clientId`/`clientSecret`), and playlists and recommendations use your own [hfy](https://github.com/Yanishamburger/hfy) server (`resolvePlaylistUrl`). The `spotify.apiUrl` setting is removed.
+- Spotify no longer depends on PulseLink's resolver server: tracks, albums, artists and search use the Spotify Web API (`clientId`/`clientSecret`), and playlists and recommendations use your own [Sonara-API](https://github.com/SonaraHQ/Sonora-API) server (`resolvePlaylistUrl`). The `spotify.apiUrl` setting is removed.
 - No built-in third-party server addresses: `anonymousTokenUrl` and Amazon Music's new `apiUrl` have no defaults.
 - Credentials in `resolvePlaylistUrl` and `anonymousTokenUrl` are sent as a Basic Authorization header instead of in the request URL.
