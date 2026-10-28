@@ -8,6 +8,15 @@ import org.springframework.stereotype.Component;
 public class AmazonMusicConfig {
 
 	private int searchLimit = 10;
+	private String apiUrl;
+
+	public String getApiUrl() {
+		return this.apiUrl;
+	}
+
+	public void setApiUrl(String apiUrl) {
+		this.apiUrl = apiUrl;
+	}
 
 	public int getSearchLimit() {
 		return this.searchLimit;

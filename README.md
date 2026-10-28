@@ -9,10 +9,10 @@ Sonara is a fork of [PulseLink](https://github.com/ItzRandom23/PulseLink), which
 1. Add Sonara to your Lavalink `application.yml` with JitPack:
 
 ```yaml
-plugins:
-  - dependency: "com.github.Vexify4103:Sonara:v1.0.0"
-    repository: "https://jitpack.io"
-    snapshot: false
+lavalink:
+  plugins:
+    - dependency: "com.github.Vexify4103:Sonara:1.0.0"
+      repository: "https://jitpack.io"
 ```
 
 2. Use [`application.example.yml`](https://github.com/Vexify4103/Sonara/blob/main/application.example.yml) as the full configuration reference.
@@ -35,6 +35,29 @@ plugins:
 
 LRCLIB searches by the loaded track's title and artist and returns plain lyrics, synchronized lyrics, or both when available.
 
+### Spotify
+
+Sonara loads Spotify in two ways:
+
+- **Spotify Web API** for tracks, albums, artist top tracks and `spsearch:`. Set `clientId` and `clientSecret` from the [Spotify developer dashboard](https://developer.spotify.com/dashboard).
+- **[hfy](https://github.com/Yanishamburger/hfy)** for playlists and recommendations. hfy is a small self-hosted Spotify resolver. It uses Spotify's web player API, so it also serves Spotify-made playlists (Daily Mix, Discover Weekly, Top 50, radios) and recommendations, which the Web API blocks for newer apps. It also provides the anonymous token endpoint (`/spotifytoken`).
+
+There is no public hfy server: host your own (see the hfy README) and point Sonara at it.
+
+```yaml
+plugins:
+  sonara:
+    spotify:
+      clientId: "your client id"
+      clientSecret: "your client secret"
+      resolvePlaylistUrl: "https://user:password@your-hfy-host"
+      anonymousTokenUrl: "https://user:password@your-hfy-host/spotifytoken"
+```
+
+- Without `resolvePlaylistUrl`, user playlists still load through the Web API, but Spotify-made playlists and `sprec:` recommendations do not.
+- With `clientId`/`clientSecret` set, Sonara asks hfy for the `/full` playlist and recommendation routes, which add ISRCs for better mirroring. The credentials are sent as headers, never in the URL.
+- Credentials in a URL (`https://user:password@host`) are sent as a Basic Authorization header and removed from the request URL, so they do not show up in logs.
+
 The Lavalink lyrics endpoint is provided by the [LavaLyrics plugin](https://github.com/topi314/LavaLyrics); install it alongside Sonara when you need `GET /v4/sessions/{sessionId}/players/{guildId}/track/lyrics`.
 
 ## Providers and Mirroring
@@ -49,8 +72,8 @@ Playback modes:
 
 | Source | Access | Notes |
 |--------|--------|-------|
-| Spotify | Mirror | `apiUrl` and `anonymousTokenUrl` are optional. `resolvePlaylistUrl` loads Spotify-made playlists (Daily Mix, Top 50, radios) from an [hfy](https://github.com/Yanishamburger/hfy) resolver; `clientId`/`clientSecret` add ISRCs. |
-| Amazon Music | Mirror | No credentials required. |
+| Spotify | Mirror | Requires `clientId`/`clientSecret` (or `anonymousTokenUrl`). `resolvePlaylistUrl` points at your [hfy](https://github.com/Yanishamburger/hfy) resolver for playlists and recommendations. See [Spotify](#spotify). |
+| Amazon Music | Mirror | Requires `apiUrl`, a compatible Amazon Music API server. There is no default. |
 | Apple Music | Mirror | `mediaAPIToken` is optional. |
 | Tidal | Mirror / Direct | Uses the built-in default token; direct streaming also needs hifi-api. |
 | Qobuz | Mirror | `userOauthToken` is required. |
@@ -67,8 +90,9 @@ Playback modes:
 | YouTube | Search / Lyrics | Requires the new YouTube source plugin. |
 
 Credentials and external requirements:
-- No credentials required: Spotify, Amazon Music, Pandora, Gaana, SoundCloud, FloweryTTS
-- Spotify track-mix recommendations first request one direct recommendation from the configured Spotify resolver. Album and artist mixes, and track mixes with no direct result, use Spotify's inspired-by mix API, which uses the anonymous token endpoint. By default that token endpoint is `http://140.245.242.153:8082/api/token`; override it with `plugins.sonara.spotify.anonymousTokenUrl`.
+- No credentials required: Pandora, Gaana, SoundCloud, FloweryTTS
+- Spotify needs `clientId`/`clientSecret`, plus your own hfy server (`resolvePlaylistUrl`) for Spotify-made playlists and recommendations. Amazon Music needs `apiUrl`.
+- Spotify track-mix recommendations (`sprec:mix:track:id`) first ask hfy for one direct recommendation. Album and artist mixes, and track mixes with no direct result, use Spotify's inspired-by mix API, which needs `plugins.sonara.spotify.anonymousTokenUrl` (for example hfy's `/spotifytoken`).
 - Optional overrides: Apple Music `mediaAPIToken`, Tidal `token` or `appId`/`appSecret`, Audiomack `consumerKey` / `consumerSecret`, JioSaavn `decryption`, Pandora `remoteTokenUrl` / `csrfToken` / `authToken`
 - Required credentials: Deezer `arl` and `masterDecryptionKey`, Yandex Music `accessToken`, VK Music `userToken`, Qobuz `userOauthToken`
 - Other required setup: `yt-dlp` installed for yt-dlp, and the new YouTube source plugin for YouTube search / lyrics
@@ -122,5 +146,6 @@ Changes in Sonara compared to PulseLink:
 - Renamed to Sonara (packages `com.github.vexify4103.sonara`, plugin `sonara-plugin`, config `plugins.sonara`).
 - LRCLIB synced lyrics without a space after the timestamp no longer fail the whole lyrics request.
 - Bundles a LavaLyrics build where one failing lyrics source no longer fails the whole lookup.
-- `spotify.resolvePlaylistUrl` loads Spotify-made playlists from an hfy resolver.
+- Spotify no longer depends on PulseLink's resolver server: tracks, albums, artists and search use the Spotify Web API (`clientId`/`clientSecret`), and playlists and recommendations use your own [hfy](https://github.com/Yanishamburger/hfy) server (`resolvePlaylistUrl`). The `spotify.apiUrl` setting is removed.
+- No built-in third-party server addresses: `anonymousTokenUrl` and Amazon Music's new `apiUrl` have no defaults.
 - Credentials in `resolvePlaylistUrl` and `anonymousTokenUrl` are sent as a Basic Authorization header instead of in the request URL.

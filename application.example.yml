@@ -31,21 +31,26 @@ plugins:
       # Free plain and synchronized lyrics from LRCLIB.
       lrcLib: true
     spotify:
-      # Optional. Defaults to http://140.245.242.153:8081
-      apiUrl: "http://140.245.242.153:8081"
-      # Optional. Defaults to http://140.245.242.153:8082/api/token ( For sprec:mix )
-      anonymousTokenUrl: "http://140.245.242.153:8082/api/token"
-      # Optional. Loads Spotify-made playlists (Daily Mix, Top 50, radios) from an hfy resolver first.
+      # Spotify app credentials from https://developer.spotify.com/dashboard.
+      # Used for tracks, albums, artists and search (Spotify Web API), and sent to the hfy resolver as headers to get ISRCs.
+      clientId: "your client id"
+      clientSecret: "your client secret"
+      # Optional. Your hfy resolver (https://github.com/Yanishamburger/hfy).
+      # Loads all playlists, including Spotify-made ones (Daily Mix, Top 50, radios) that the Web API blocks,
+      # and sprec: recommendations. Without it, user playlists still load through the Web API.
+      # Credentials in the URL (https://user:password@host) are sent as a Basic Authorization header.
       # resolvePlaylistUrl: "https://user:password@your-hfy-host"
-      # Optional. Spotify app credentials, sent to resolvePlaylistUrl as headers to get ISRCs.
-      # clientId: "your client id"
-      # clientSecret: "your client secret"
+      # Optional. Anonymous Spotify token endpoint, for example hfy's /spotifytoken.
+      # Needed for album and artist mixes (sprec:mix:album:/sprec:mix:artist:), and used for the Web API when no clientId is set.
+      # anonymousTokenUrl: "https://user:password@your-hfy-host/spotifytoken"
       countryCode: "US"
       playlistLoadLimit: 6
       albumLoadLimit: 6
       resolveArtistsInSearch: true
       localFiles: false
     amazonmusic:
+      # Required for Amazon Music: base URL of a compatible Amazon Music API server. There is no default.
+      # apiUrl: "https://your-amazon-music-api"
       # Optional. 0-10
       searchLimit: 10
     applemusic:

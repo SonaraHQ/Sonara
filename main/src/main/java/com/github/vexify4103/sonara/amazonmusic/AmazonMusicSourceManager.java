@@ -46,12 +46,13 @@ public class AmazonMusicSourceManager extends MirroringAudioSourceManager implem
 	);
 	public static final String SEARCH_PREFIX = "amzsearch:";
 	public static final Set<AudioSearchResult.Type> SEARCH_TYPES = Set.of(AudioSearchResult.Type.TRACK);
-	private static final String API_BASE = "http://140.245.242.153:8083";
 	private static final int DEFAULT_SEARCH_LIMIT = 10;
 	private static final long FAILURE_CACHE_TTL_MS = 30_000L;
 	private static final int FAILURE_CACHE_CLEANUP_THRESHOLD = 256;
 
 	private int searchLimit = DEFAULT_SEARCH_LIMIT;
+	// Base URL of the Amazon Music API server. There is no default, Amazon Music is unavailable until it is set.
+	private String apiUrl;
 	private final Map<String, Long> recentFailures = new ConcurrentHashMap<>();
 
 	public AmazonMusicSourceManager(String[] providers, AudioPlayerManager audioPlayerManager) {
@@ -73,6 +74,22 @@ public class AmazonMusicSourceManager extends MirroringAudioSourceManager implem
 
 	public void setSearchLimit(int searchLimit) {
 		this.searchLimit = searchLimit;
+	}
+
+	public void setApiUrl(String apiUrl) {
+		if (apiUrl == null || apiUrl.isBlank()) {
+			this.apiUrl = null;
+			return;
+		}
+		var url = apiUrl.strip();
+		this.apiUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+	}
+
+	private String requireApiUrl() {
+		if (this.apiUrl == null) {
+			throw new IllegalStateException("Amazon Music needs plugins.sonara.amazonmusic.apiUrl to be set.");
+		}
+		return this.apiUrl;
 	}
 
 	@NotNull
@@ -199,7 +216,7 @@ public class AmazonMusicSourceManager extends MirroringAudioSourceManager implem
 			return new ArrayList<>();
 		}
 		String encoded = URLEncoder.encode(query, StandardCharsets.UTF_8);
-		var request = new HttpGet(API_BASE + "/api/search/songs?query=" + encoded + "&page=1&limit=" + searchLimit);
+		var request = new HttpGet(requireApiUrl() + "/api/search/songs?query=" + encoded + "&page=1&limit=" + searchLimit);
 		var json = SonaraTools.fetchResponseAsJson(this.httpInterfaceManager.getInterface(), request);
 		var items = json != null ? json.get("data") : null;
 		var tracks = new ArrayList<AudioTrack>();
@@ -281,7 +298,7 @@ public class AmazonMusicSourceManager extends MirroringAudioSourceManager implem
 
 	private JsonBrowser getDataJson(String pathPrefix, String url, boolean appendIsrcFalse) throws IOException {
 		String encoded = URLEncoder.encode(url, StandardCharsets.UTF_8);
-		String finalUrl = API_BASE + pathPrefix + encoded;
+		String finalUrl = requireApiUrl() + pathPrefix + encoded;
 		if (appendIsrcFalse) {
 			finalUrl = finalUrl + "&isrc=false";
 		}

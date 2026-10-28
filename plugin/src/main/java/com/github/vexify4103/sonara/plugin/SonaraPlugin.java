@@ -94,12 +94,12 @@ public class SonaraPlugin implements AudioPlayerManagerConfiguration, SearchMana
 		if (sourcesConfig.isSpotify()) {
 			this.spotify = new SpotifySourceManager(
 				spotifyConfig.getCountryCode(),
-				spotifyConfig.getApiUrl(),
 				unused -> manager,
 				new DefaultMirroringAudioTrackResolver(pluginConfig.getProviders())
 			);
+			this.spotify.setClientCredentials(spotifyConfig.getClientId(), spotifyConfig.getClientSecret());
 			this.spotify.setAnonymousTokenUrl(spotifyConfig.getAnonymousTokenUrl());
-			this.spotify.setResolvePlaylistUrl(spotifyConfig.getResolvePlaylistUrl(), spotifyConfig.getClientId(), spotifyConfig.getClientSecret());
+			this.spotify.setResolvePlaylistUrl(spotifyConfig.getResolvePlaylistUrl());
 
 			if (spotifyConfig.getPlaylistLoadLimit() > 0) {
 				this.spotify.setPlaylistPageLimit(spotifyConfig.getPlaylistLoadLimit());
@@ -127,6 +127,10 @@ public class SonaraPlugin implements AudioPlayerManagerConfiguration, SearchMana
 				searchLimit = 10;
 			}
 			this.amazonMusic.setSearchLimit(searchLimit);
+			this.amazonMusic.setApiUrl(amazonMusicConfig.getApiUrl());
+			if (amazonMusicConfig.getApiUrl() == null || amazonMusicConfig.getApiUrl().isBlank()) {
+				log.warn("Amazon Music is enabled but plugins.sonara.amazonmusic.apiUrl is not set, so it cannot load anything.");
+			}
 		}
 
 		if (sourcesConfig.isAppleMusic()) {
@@ -330,9 +334,6 @@ public class SonaraPlugin implements AudioPlayerManagerConfiguration, SearchMana
 		try {
 			var spotifyConfig = config.getSpotify();
 			if (spotifyConfig != null && this.spotify != null) {
-				if (spotifyConfig.getApiUrl() != null) {
-					this.spotify.setApiUrl(spotifyConfig.getApiUrl());
-				}
 				if (spotifyConfig.getAnonymousTokenUrl() != null) {
 					this.spotify.setAnonymousTokenUrl(spotifyConfig.getAnonymousTokenUrl());
 				}

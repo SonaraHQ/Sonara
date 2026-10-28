@@ -7,10 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpotifyConfig {
 
-    private static final String DEFAULT_ANONYMOUS_TOKEN_URL = "http://140.245.242.153:8082/api/token";
-
-    private String apiUrl;
-    private String anonymousTokenUrl = DEFAULT_ANONYMOUS_TOKEN_URL;
+    private String anonymousTokenUrl;
     private String resolvePlaylistUrl;
     private String clientId;
     private String clientSecret;
@@ -20,22 +17,12 @@ public class SpotifyConfig {
     private boolean resolveArtistsInSearch = true;
     private boolean localFiles = false;
 
-    public String getApiUrl() {
-        return this.apiUrl;
-    }
-
-    public void setApiUrl(String apiUrl) {
-        this.apiUrl = apiUrl;
-    }
-
     public String getAnonymousTokenUrl() {
         return this.anonymousTokenUrl;
     }
 
     public void setAnonymousTokenUrl(String anonymousTokenUrl) {
-        this.anonymousTokenUrl = (anonymousTokenUrl == null || anonymousTokenUrl.isBlank())
-            ? DEFAULT_ANONYMOUS_TOKEN_URL
-            : anonymousTokenUrl;
+        this.anonymousTokenUrl = anonymousTokenUrl;
     }
 
     public String getResolvePlaylistUrl() {
