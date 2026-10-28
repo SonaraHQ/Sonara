@@ -11,6 +11,9 @@ public class SpotifyConfig {
 
     private String apiUrl;
     private String anonymousTokenUrl = DEFAULT_ANONYMOUS_TOKEN_URL;
+    private String resolvePlaylistUrl;
+    private String clientId;
+    private String clientSecret;
     private String countryCode = "US";
     private int playlistLoadLimit = 6;
     private int albumLoadLimit = 6;
@@ -33,6 +36,30 @@ public class SpotifyConfig {
         this.anonymousTokenUrl = (anonymousTokenUrl == null || anonymousTokenUrl.isBlank())
             ? DEFAULT_ANONYMOUS_TOKEN_URL
             : anonymousTokenUrl;
+    }
+
+    public String getResolvePlaylistUrl() {
+        return this.resolvePlaylistUrl;
+    }
+
+    public void setResolvePlaylistUrl(String resolvePlaylistUrl) {
+        this.resolvePlaylistUrl = resolvePlaylistUrl;
+    }
+
+    public String getClientId() {
+        return this.clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getClientSecret() {
+        return this.clientSecret;
+    }
+
+    public void setClientSecret(String clientSecret) {
+        this.clientSecret = clientSecret;
     }
 
     public String getCountryCode() {

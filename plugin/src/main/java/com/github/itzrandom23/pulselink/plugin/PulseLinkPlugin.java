@@ -99,6 +99,7 @@ public class PulseLinkPlugin implements AudioPlayerManagerConfiguration, SearchM
 				new DefaultMirroringAudioTrackResolver(pluginConfig.getProviders())
 			);
 			this.spotify.setAnonymousTokenUrl(spotifyConfig.getAnonymousTokenUrl());
+			this.spotify.setResolvePlaylistUrl(spotifyConfig.getResolvePlaylistUrl(), spotifyConfig.getClientId(), spotifyConfig.getClientSecret());
 
 			if (spotifyConfig.getPlaylistLoadLimit() > 0) {
 				this.spotify.setPlaylistPageLimit(spotifyConfig.getPlaylistLoadLimit());

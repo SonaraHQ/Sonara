@@ -35,6 +35,11 @@ plugins:
       apiUrl: "http://140.245.242.153:8081"
       # Optional. Defaults to http://140.245.242.153:8082/api/token ( For sprec:mix )
       anonymousTokenUrl: "http://140.245.242.153:8082/api/token"
+      # Optional. Loads Spotify-made playlists (Daily Mix, Top 50, radios) from an hfy resolver first.
+      # resolvePlaylistUrl: "https://user:password@your-hfy-host"
+      # Optional. Spotify app credentials, sent to resolvePlaylistUrl as headers to get ISRCs.
+      # clientId: "your client id"
+      # clientSecret: "your client secret"
       countryCode: "US"
       playlistLoadLimit: 6
       albumLoadLimit: 6

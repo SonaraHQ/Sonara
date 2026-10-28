@@ -24,9 +24,11 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.stream.Collectors;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -51,6 +53,8 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
     public static final int PLAYLIST_MAX_PAGE_ITEMS = 100;
     public static final int ALBUM_MAX_PAGE_ITEMS = 50;
     private static final String DEFAULT_RESOLVER = "http://140.245.242.153:8081";
+    // Playlist ids of Spotify-made playlists (editorial, Daily Mix, radios) start with this
+    private static final String SPOTIFY_MADE_PLAYLIST_PREFIX = "37i9dQZ";
     public static final Set<AudioSearchResult.Type> SEARCH_TYPES = Set.of(AudioSearchResult.Type.ALBUM,
             AudioSearchResult.Type.ARTIST, AudioSearchResult.Type.PLAYLIST, AudioSearchResult.Type.TRACK);
     private static final Logger log = LoggerFactory.getLogger(SpotifySourceManager.class);
@@ -59,6 +63,11 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
     private final String countryCode;
     private String resolver = DEFAULT_RESOLVER;
     private String anonymousTokenUrl = DEFAULT_ANONYMOUS_TOKEN_URL;
+    // Spotify-made playlists (Daily Mix, Top 50, radios...) are blocked on the public Web API.
+    // When set, they are loaded from an hfy resolver (GET <url>/playlist/full/<id>) first.
+    private String resolvePlaylistUrl;
+    private String clientId;
+    private String clientSecret;
     private volatile String anonymousAccessToken;
     private volatile long anonymousAccessTokenExpirationMs;
     private int playlistPageLimit = 6;
@@ -147,6 +156,17 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
         this.anonymousTokenUrl = anonymousTokenUrl;
         this.anonymousAccessToken = null;
         this.anonymousAccessTokenExpirationMs = 0;
+    }
+
+    public void setResolvePlaylistUrl(String resolvePlaylistUrl, String clientId, String clientSecret) {
+        if (resolvePlaylistUrl == null || resolvePlaylistUrl.isBlank()) {
+            this.resolvePlaylistUrl = null;
+        } else {
+            var url = resolvePlaylistUrl.strip();
+            this.resolvePlaylistUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        }
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
     }
 
     @NotNull
@@ -301,6 +321,13 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
                     return resolveArtist(id);
                 }
 
+                if ("playlist".equals(type)) {
+                    var playlist = resolveSpotifyMadePlaylist(id);
+                    if (playlist != null) {
+                        return playlist;
+                    }
+                }
+
                 return resolveViaLeo(identifier, preview);
             }
 
@@ -370,6 +397,103 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
                 tracks,
                 null,
                 false);
+    }
+
+    // Loads a Spotify-made playlist from resolvePlaylistUrl. Returns null when it is not one,
+    // or when the resolver fails, so the default resolver is used instead.
+    @Nullable
+    private AudioItem resolveSpotifyMadePlaylist(String id) {
+        if (this.resolvePlaylistUrl == null || !id.startsWith(SPOTIFY_MADE_PLAYLIST_PREFIX)) {
+            return null;
+        }
+
+        // /full adds ISRCs (better mirroring) but needs the app credentials
+        var hasCredentials = this.clientId != null && !this.clientId.isBlank()
+                && this.clientSecret != null && !this.clientSecret.isBlank();
+        var path = hasCredentials ? "/playlist/full/" : "/playlist/";
+        var request = authorizedGet(this.resolvePlaylistUrl + path + URLEncoder.encode(id, StandardCharsets.UTF_8));
+        if (hasCredentials) {
+            // Headers, not query params, so the secret does not end up in logged URLs
+            request.setHeader("X-Client-Id", this.clientId);
+            request.setHeader("X-Client-Secret", this.clientSecret);
+        }
+
+        try (var httpInterface = this.httpInterfaceManager.getInterface()) {
+            return parseResolvedPlaylist(PulseLinkTools.fetchResponseAsJson(httpInterface, request));
+        } catch (IOException | RuntimeException e) {
+            log.warn("Failed to load Spotify-made playlist {} from resolvePlaylistUrl, using the default resolver: {}", id, e.getMessage());
+            return null;
+        }
+    }
+
+    // Reads a playlist in the Spotify Web API format, as returned by hfy
+    @Nullable
+    private AudioItem parseResolvedPlaylist(@Nullable JsonBrowser json) {
+        if (json == null || json.isNull()) {
+            return null;
+        }
+
+        var tracks = new ArrayList<AudioTrack>();
+        for (var item : json.get("tracks").get("items").values()) {
+            var track = item.get("track");
+            var trackId = track.get("id").text();
+            if (trackId == null || trackId.isBlank() || track.get("is_local").asBoolean(false)) {
+                continue;
+            }
+
+            var artists = track.get("artists").values().stream()
+                    .map(artist -> artist.get("name").text())
+                    .filter(name -> name != null && !name.isBlank())
+                    .collect(Collectors.joining(", "));
+            var album = track.get("album");
+            var images = album.get("images").values();
+            var artwork = images.isEmpty() ? null : images.get(0).get("url").text();
+            var albumId = album.get("id").text();
+
+            var info = new AudioTrackInfo(
+                    track.get("name").text(),
+                    artists,
+                    track.get("duration_ms").asLong(0),
+                    trackId,
+                    false,
+                    "https://open.spotify.com/track/" + trackId,
+                    artwork,
+                    track.get("external_ids").get("isrc").text());
+
+            tracks.add(new SpotifyAudioTrack(
+                    info,
+                    album.get("name").text(),
+                    albumId == null || albumId.isBlank() ? null : "https://open.spotify.com/album/" + albumId,
+                    null,
+                    artwork,
+                    null,
+                    false,
+                    this));
+        }
+
+        if (tracks.isEmpty()) {
+            return null;
+        }
+
+        return new BasicAudioPlaylist(json.get("name").textOrDefault("Spotify"), tracks, null, false);
+    }
+
+    // Credentials in a URL (https://user:pass@host/path) are sent as a Basic header up front
+    // and removed from the URL, so they never show up in logged request URLs
+    private static HttpGet authorizedGet(String url) {
+        var uri = URI.create(url);
+        var userInfo = uri.getUserInfo();
+        if (userInfo == null) {
+            return new HttpGet(uri);
+        }
+
+        var request = new HttpGet(uri.getScheme() + "://" + uri.getHost()
+                + (uri.getPort() == -1 ? "" : ":" + uri.getPort())
+                + (uri.getRawPath() == null ? "" : uri.getRawPath())
+                + (uri.getRawQuery() == null ? "" : "?" + uri.getRawQuery()));
+        request.setHeader("Authorization", "Basic "
+                + Base64.getEncoder().encodeToString(userInfo.getBytes(StandardCharsets.UTF_8)));
+        return request;
     }
 
     private AudioItem resolveViaLeo(String identifier, boolean preview) throws IOException {
@@ -536,7 +660,7 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
                 return this.anonymousAccessToken;
             }
 
-            var tokenRequest = new HttpGet(this.anonymousTokenUrl);
+            var tokenRequest = authorizedGet(this.anonymousTokenUrl);
             var tokenJson = PulseLinkTools.fetchResponseAsJson(
                     this.httpInterfaceManager.getInterface(),
                     tokenRequest);
