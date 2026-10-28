@@ -8,7 +8,7 @@ Sonara is a fork of [PulseLink](https://github.com/ItzRandom23/PulseLink), which
 
 ## Quick Start
 
-1. Add Sonara to your Lavalink `application.yml` with JitPack. Replace `VERSION` with the latest release shown on the badge above (for example `1.1.0`):
+1. Add Sonara to your Lavalink `application.yml` with JitPack. Replace `VERSION` with the latest release shown on the badge above (for example `1.1.1`):
 
 ```yaml
 lavalink:
