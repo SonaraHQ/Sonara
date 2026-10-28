@@ -11,13 +11,19 @@ allprojects {
         mavenCentral()
         maven { url "https://jitpack.io" }
     }
+
+    // Bundle the fixed LavaLyrics (Vexify4103/LavaLyrics) instead of lavalyrics 1.0.0,
+    // so one failing lyrics source no longer fails the whole lookup
+    configurations.all {
+        exclude group: "com.github.topi314.lavalyrics", module: "lavalyrics"
+    }
 }
 
 subprojects {
     apply plugin: "java"
     apply plugin: "maven-publish"
 
-    def versionStr = "1.7.6"
+    def versionStr = "1.7.6-hambot"
     def isSnapshot = false
     version versionStr
     println "Version: " + versionStr
