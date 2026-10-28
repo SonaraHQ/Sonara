@@ -397,8 +397,23 @@ public class DeezerAudioSourceManager extends ExtendedAudioSourceManager impleme
 	public AudioLyrics getLyrics(String id) throws IOException {
 		var tokens = this.tokenTracker.getTokens();
 
-		var json = this.getJson(PRIVATE_API_BASE + "?method=song.getLyrics&api_version=1.0&api_token=" + tokens.api + "&sng_id=" + id);
-		if (json == null || json.get("results").values().isEmpty()) {
+		// The api_token (checkForm) only works together with the session cookies it was issued for,
+		// otherwise Deezer answers "VALID_TOKEN_REQUIRED: Invalid CSRF token"
+		var request = new HttpPost(PRIVATE_API_BASE + "?method=song.getLyrics&input=3&api_version=1.0&api_token=" + tokens.api);
+		request.setHeader("Cookie", "sid=" + tokens.sessionId + "; dzr_uniq_id=" + tokens.dzrUniqId);
+		request.setHeader("Content-Type", "application/json");
+		request.setEntity(new StringEntity("{\"sng_id\": \"" + id + "\"}", StandardCharsets.UTF_8));
+
+		var json = SonaraTools.fetchResponseAsJson(this.getHttpInterface(), request);
+		if (json == null) {
+			return null;
+		}
+		if (!json.get("error").values().isEmpty()) {
+			// Tracks without lyrics also answer with an error, so this is not logged as a failure
+			log.debug("Deezer has no lyrics for track {}: {}", id, json.get("error").format());
+			return null;
+		}
+		if (json.get("results").values().isEmpty()) {
 			return null;
 		}
 

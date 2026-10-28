@@ -24,16 +24,29 @@ See [`application.example.yml`](https://github.com/SonaraHQ/Sonara/blob/main/app
 
 ### Lyrics
 
-Enable LRCLIB lyrics with:
+Turn on the lyrics sources you want:
 
 ```yaml
 plugins:
   sonara:
     lyrics-sources:
       lrcLib: true
+      genius: true
+      spotify: true
+      deezer: true
+      youtube: true
 ```
 
-LRCLIB searches by the loaded track's title and artist and returns plain lyrics, synchronized lyrics, or both when available.
+| Source | Synced | Needs |
+|--------|--------|-------|
+| `lrcLib` | yes, when available | nothing |
+| `genius` | no, plain text | nothing |
+| `spotify` | yes, for most songs | `spotify.resolvePlaylistUrl` pointing at a Sonara-API server with `SPOTIFY_SP_DC` set (Spotify only serves lyrics to logged-in users). Tracks from other sources are matched by ISRC, which needs `clientId`/`clientSecret` |
+| `deezer` | yes, for many songs | `deezer.arl` |
+| `youtube` | no | `sources.youtube: true` |
+| `yandexmusic` / `vkmusic` | depends | their access tokens |
+
+LRCLIB and Genius search by the loaded track's title and artist. The order in which the sources are asked is set in LavaLyrics' `plugins.lavalyrics.sources` (source names: `lrclib`, `genius`, `spotify`, `deezer`, `youtube`, `yandexmusic`, `vkmusic`).
 
 ### Spotify
 
@@ -149,3 +162,5 @@ Changes in Sonara compared to PulseLink:
 - Spotify no longer depends on PulseLink's resolver server: tracks, albums, artists and search use the Spotify Web API (`clientId`/`clientSecret`), and playlists and recommendations use your own [Sonara-API](https://github.com/SonaraHQ/Sonara-API) server (`resolvePlaylistUrl`). The `spotify.apiUrl` setting is removed.
 - No built-in third-party server addresses: `anonymousTokenUrl` and Amazon Music's new `apiUrl` have no defaults.
 - Credentials in `resolvePlaylistUrl` and `anonymousTokenUrl` are sent as a Basic Authorization header instead of in the request URL.
+- New lyrics sources: Genius (`lyrics-sources.genius`) and Spotify through Sonara-API (`lyrics-sources.spotify`).
+- Deezer lyrics work again: the request now sends the session cookies its token belongs to, instead of failing with "Invalid CSRF token".

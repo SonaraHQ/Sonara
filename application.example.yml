@@ -30,6 +30,10 @@ plugins:
       vkmusic: false
       # Free plain and synchronized lyrics from LRCLIB.
       lrcLib: true
+      # Plain lyrics from Genius. No account needed.
+      genius: false
+      # Spotify lyrics through your Sonara-API server (spotify.resolvePlaylistUrl). The server needs SPOTIFY_SP_DC.
+      spotify: false
     spotify:
       # Spotify app credentials from https://developer.spotify.com/dashboard.
       # Used for tracks, albums, artists and search (Spotify Web API), and sent to the Sonara-API resolver as headers to get ISRCs.

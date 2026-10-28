@@ -1,5 +1,8 @@
 package com.github.vexify4103.sonara.spotify;
 
+import com.github.topi314.lavalyrics.AudioLyricsManager;
+import com.github.topi314.lavalyrics.lyrics.AudioLyrics;
+import com.github.topi314.lavalyrics.lyrics.BasicAudioLyrics;
 import com.github.topi314.lavasearch.AudioSearchManager;
 import com.github.topi314.lavasearch.result.AudioSearchResult;
 import com.github.topi314.lavasearch.result.BasicAudioSearchResult;
@@ -31,6 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashSet;
@@ -50,10 +54,11 @@ import java.util.stream.Collectors;
  *   <li>Playlists and recommendations use a Sonara-API resolver ({@code resolvePlaylistUrl}) when it is set.
  *   It also serves Spotify-made playlists (Daily Mix, Top 50, radios), which the Web API blocks.
  *   Without a resolver, user playlists still load through the Web API.</li>
+ *   <li>Lyrics also come from the resolver ({@code GET /lyrics/<id>}), which needs a logged-in Spotify account there.</li>
  * </ul>
  */
 public class SpotifySourceManager extends MirroringAudioSourceManager
-        implements HttpConfigurable, AudioSearchManager {
+        implements HttpConfigurable, AudioSearchManager, AudioLyricsManager {
 
     public static final Pattern URL_PATTERN = Pattern.compile(
             "(https?://)(www\\.)?open\\.spotify\\.com/((?<region>[a-zA-Z-]+)/)?(?<type>track|album|playlist|artist)/(?<identifier>[a-zA-Z0-9-_]+)");
@@ -379,6 +384,75 @@ public class SpotifySourceManager extends MirroringAudioSourceManager
         // Other sprec: queries are a Spotify track url, uri or id
         var recommended = this.getResolverRecommendations(query, 0, preview);
         return recommended == null ? AudioReference.NO_TRACK : recommended;
+    }
+
+    // ---- Lyrics ----
+
+    // Spotify lyrics from the Sonara-API resolver. Tracks from other sources are matched by ISRC.
+    @Override
+    @Nullable
+    public AudioLyrics loadLyrics(@NotNull AudioTrack track) {
+        if (this.resolvePlaylistUrl == null) {
+            return null;
+        }
+
+        try {
+            var id = this.findSpotifyId(track);
+            if (id == null) {
+                return null;
+            }
+
+            var json = this.fetchJson(authorizedGet(this.resolvePlaylistUrl + "/lyrics/" + encode(id)));
+            var lyrics = json == null ? null : json.get("lyrics");
+            if (lyrics == null || lyrics.isNull()) {
+                return null;
+            }
+
+            var synced = "LINE_SYNCED".equals(lyrics.get("syncType").text());
+            var lines = new ArrayList<AudioLyrics.Line>();
+            var text = new StringBuilder();
+            for (var line : lyrics.get("lines").values()) {
+                var words = line.get("words").safeText();
+                if (text.length() > 0) {
+                    text.append('\n');
+                }
+                text.append(words);
+
+                if (synced) {
+                    var start = line.get("startTimeMs").asLong(0);
+                    var end = line.get("endTimeMs").asLong(0);
+                    lines.add(new BasicAudioLyrics.BasicLine(
+                            Duration.ofMillis(start),
+                            end > start ? Duration.ofMillis(end - start) : null,
+                            words));
+                }
+            }
+            if (text.length() == 0) {
+                return null;
+            }
+
+            return new BasicAudioLyrics("spotify", lyrics.get("providerDisplayName").textOrDefault("Spotify"), text.toString(), lines);
+        } catch (IOException | RuntimeException e) {
+            log.debug("Spotify lyrics lookup failed for {}: {}", track.getInfo().title, e.getMessage());
+            return null;
+        }
+    }
+
+    // The Spotify id of a track: its own id for Spotify tracks, otherwise a Web API search by ISRC
+    @Nullable
+    private String findSpotifyId(AudioTrack track) throws IOException {
+        if (track.getSourceManager() == this) {
+            return track.getIdentifier();
+        }
+
+        var isrc = track.getInfo().isrc;
+        if (isrc == null || isrc.isBlank() || (!this.hasCredentials() && this.anonymousTokenUrl == null)) {
+            return null;
+        }
+
+        var json = this.apiGet("search?q=" + encode("isrc:" + isrc) + "&type=track&limit=1&market=" + encode(this.countryCode));
+        var items = json == null ? List.<JsonBrowser>of() : json.get("tracks").get("items").values();
+        return items.isEmpty() ? null : items.get(0).get("id").text();
     }
 
     // ---- Sonara-API resolver ----

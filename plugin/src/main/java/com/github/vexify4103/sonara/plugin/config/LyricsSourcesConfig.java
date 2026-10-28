@@ -13,6 +13,10 @@ public class LyricsSourcesConfig {
 	private boolean yandexMusic = false;
 	private boolean vkMusic = false;
 	private boolean lrcLib = false;
+	// Plain lyrics from Genius
+	private boolean genius = false;
+	// Spotify lyrics through the Sonara-API server (spotify.resolvePlaylistUrl), which needs SPOTIFY_SP_DC
+	private boolean spotify = false;
 
 	public boolean isDeezer() {
 		return this.deezer;
@@ -52,5 +56,21 @@ public class LyricsSourcesConfig {
 
 	public void setLrcLib(boolean lrcLib) {
 		this.lrcLib = lrcLib;
+	}
+
+	public boolean isGenius() {
+		return this.genius;
+	}
+
+	public void setGenius(boolean genius) {
+		this.genius = genius;
+	}
+
+	public boolean isSpotify() {
+		return this.spotify;
+	}
+
+	public void setSpotify(boolean spotify) {
+		this.spotify = spotify;
 	}
 }

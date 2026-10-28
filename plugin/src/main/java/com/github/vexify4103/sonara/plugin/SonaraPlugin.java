@@ -12,6 +12,7 @@ import com.github.vexify4103.sonara.deezer.DeezerAudioTrack;
 import com.github.vexify4103.sonara.flowerytts.FloweryTTSSourceManager;
 import com.github.vexify4103.sonara.gaana.GaanaAudioSourceManager;
 import com.github.vexify4103.sonara.jiosaavn.JioSaavnAudioSourceManager;
+import com.github.vexify4103.sonara.genius.GeniusLyricsManager;
 import com.github.vexify4103.sonara.lrclib.LrcLibLyricsManager;
 import com.github.vexify4103.sonara.mirror.DefaultMirroringAudioTrackResolver;
 import com.github.vexify4103.sonara.pandora.PandoraSourceManager;
@@ -64,6 +65,7 @@ public class SonaraPlugin implements AudioPlayerManagerConfiguration, SearchMana
 	
 	private PandoraSourceManager pandora;
 	private LrcLibLyricsManager lrcLib;
+	private GeniusLyricsManager genius;
 
 	public SonaraPlugin(
 		SonaraConfig pluginConfig,
@@ -232,6 +234,10 @@ public class SonaraPlugin implements AudioPlayerManagerConfiguration, SearchMana
 			this.lrcLib = new LrcLibLyricsManager();
 		}
 
+		if (lyricsSourcesConfig.isGenius()) {
+			this.genius = new GeniusLyricsManager();
+		}
+
 		if (sourcesConfig.isJiosaavn()) {
 			this.jioSaavn = new JioSaavnAudioSourceManager(jioSaavnConfig.buildConfig());
 
@@ -326,6 +332,8 @@ public class SonaraPlugin implements AudioPlayerManagerConfiguration, SearchMana
 		registerLyricsSource("Yandex Music", this.yandexMusic, this.lyricsSourcesConfig.isYandexMusic(), () -> manager.registerLyricsManager(this.yandexMusic));
 		registerLyricsSource("VK Music", this.vkMusic, this.lyricsSourcesConfig.isVkMusic(), () -> manager.registerLyricsManager(this.vkMusic));
 		registerLyricsSource("LRCLIB", this.lrcLib, this.lyricsSourcesConfig.isLrcLib(), () -> manager.registerLyricsManager(this.lrcLib));
+		registerLyricsSource("Genius", this.genius, this.lyricsSourcesConfig.isGenius(), () -> manager.registerLyricsManager(this.genius));
+		registerLyricsSource("Spotify", this.spotify, this.lyricsSourcesConfig.isSpotify(), () -> manager.registerLyricsManager(this.spotify));
 		return manager;
 	}
 
