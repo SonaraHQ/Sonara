@@ -4,7 +4,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization"
 }
 
-archivesBaseName = "pulselink-protocol"
+archivesBaseName = "sonara-protocol"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

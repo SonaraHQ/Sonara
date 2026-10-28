@@ -1,24 +1,26 @@
-# PulseLink
+# Sonara
 
-PulseLink is a Lavalink/Lavaplayer plugin that resolves metadata from multiple music services and mirrors playback through your own providers (for example YouTube search). Some sources also support direct playback.
+Sonara is a Lavalink/Lavaplayer plugin that resolves metadata from multiple music services and mirrors playback through your own providers (for example YouTube search). Some sources also support direct playback.
+
+Sonara is a fork of [PulseLink](https://github.com/ItzRandom23/PulseLink), which is based on [LavaSrc](https://github.com/topi314/LavaSrc). See [Credits](#credits) for what changed.
 
 ## Quick Start
 
-1. Add PulseLink to your Lavalink `application.yml` with JitPack:
+1. Add Sonara to your Lavalink `application.yml` with JitPack:
 
 ```yaml
 plugins:
-  - dependency: "com.github.ItzRandom23:PulseLink:v1.7.6"
+  - dependency: "com.github.Vexify4103:Sonara:v1.0.0"
     repository: "https://jitpack.io"
     snapshot: false
 ```
 
-2. Use [`application.example.yml`](https://github.com/ItzRandom23/PulseLink/blob/main/application.example.yml) as the full configuration reference.
+2. Use [`application.example.yml`](https://github.com/Vexify4103/Sonara/blob/main/application.example.yml) as the full configuration reference.
 3. Start Lavalink.
 
 ## Configuration
 
-See [`application.example.yml`](https://github.com/ItzRandom23/PulseLink/blob/main/application.example.yml) for the current full example configuration.
+See [`application.example.yml`](https://github.com/Vexify4103/Sonara/blob/main/application.example.yml) for the current full example configuration.
 
 ### Lyrics
 
@@ -26,28 +28,28 @@ Enable LRCLIB lyrics with:
 
 ```yaml
 plugins:
-  pulselink:
+  sonara:
     lyrics-sources:
       lrcLib: true
 ```
 
 LRCLIB searches by the loaded track's title and artist and returns plain lyrics, synchronized lyrics, or both when available.
 
-The Lavalink lyrics endpoint is provided by the [LavaLyrics plugin](https://github.com/topi314/LavaLyrics); install it alongside PulseLink when you need `GET /v4/sessions/{sessionId}/players/{guildId}/track/lyrics`.
+The Lavalink lyrics endpoint is provided by the [LavaLyrics plugin](https://github.com/topi314/LavaLyrics); install it alongside Sonara when you need `GET /v4/sessions/{sessionId}/players/{guildId}/track/lyrics`.
 
 ## Providers and Mirroring
 
-PulseLink mirrors playback for services that do not stream directly.
+Sonara mirrors playback for services that do not stream directly.
 
-When a track is requested, PulseLink builds a provider query using the track ISRC if available, then falls back to a title/artist query. Configure the fallback order with `plugins.pulselink.providers`.
+When a track is requested, Sonara builds a provider query using the track ISRC if available, then falls back to a title/artist query. Configure the fallback order with `plugins.sonara.providers`.
 
 Playback modes:
 - Mirror: metadata only, audio comes from your configured providers.
-- Direct: PulseLink streams audio directly.
+- Direct: Sonara streams audio directly.
 
 | Source | Access | Notes |
 |--------|--------|-------|
-| Spotify | Mirror | `apiUrl` and `anonymousTokenUrl` are optional. |
+| Spotify | Mirror | `apiUrl` and `anonymousTokenUrl` are optional. `resolvePlaylistUrl` loads Spotify-made playlists (Daily Mix, Top 50, radios) from an [hfy](https://github.com/Yanishamburger/hfy) resolver; `clientId`/`clientSecret` add ISRCs. |
 | Amazon Music | Mirror | No credentials required. |
 | Apple Music | Mirror | `mediaAPIToken` is optional. |
 | Tidal | Mirror / Direct | Uses the built-in default token; direct streaming also needs hifi-api. |
@@ -66,7 +68,7 @@ Playback modes:
 
 Credentials and external requirements:
 - No credentials required: Spotify, Amazon Music, Pandora, Gaana, SoundCloud, FloweryTTS
-- Spotify track-mix recommendations first request one direct recommendation from the configured Spotify resolver. Album and artist mixes, and track mixes with no direct result, use Spotify's inspired-by mix API, which uses the anonymous token endpoint. By default that token endpoint is `http://140.245.242.153:8082/api/token`; override it with `plugins.pulselink.spotify.anonymousTokenUrl`.
+- Spotify track-mix recommendations first request one direct recommendation from the configured Spotify resolver. Album and artist mixes, and track mixes with no direct result, use Spotify's inspired-by mix API, which uses the anonymous token endpoint. By default that token endpoint is `http://140.245.242.153:8082/api/token`; override it with `plugins.sonara.spotify.anonymousTokenUrl`.
 - Optional overrides: Apple Music `mediaAPIToken`, Tidal `token` or `appId`/`appSecret`, Audiomack `consumerKey` / `consumerSecret`, JioSaavn `decryption`, Pandora `remoteTokenUrl` / `csrfToken` / `authToken`
 - Required credentials: Deezer `arl` and `masterDecryptionKey`, Yandex Music `accessToken`, VK Music `userToken`, Qobuz `userOauthToken`
 - Other required setup: `yt-dlp` installed for yt-dlp, and the new YouTube source plugin for YouTube search / lyrics
@@ -90,7 +92,7 @@ Supported search prefixes:
 - YouTube Music autocomplete/search: `ytmsearch:query`
 
 SoundCloud fallback notes:
-- If SoundCloud only exposes a 30-second preview, PulseLink resolves a mirror during load and uses the mirror track duration for the queued SoundCloud track.
+- If SoundCloud only exposes a 30-second preview, Sonara resolves a mirror during load and uses the mirror track duration for the queued SoundCloud track.
 - `scsearch:` may be included in mirror providers: playable full SoundCloud search results are used, while preview-only results are skipped without recursive SoundCloud searching.
 
 ## Troubleshooting
@@ -113,5 +115,12 @@ Please report security issues privately through GitHub Security Advisories for t
 
 ## Credits
 
-PulseLink is based on LavaSrc by topi314 and community contributors.  
-Additional source adapters and cleanup by ItzRandom23.
+Sonara is a fork of [PulseLink](https://github.com/ItzRandom23/PulseLink) by ItzRandom23, licensed under the Apache License 2.0.
+PulseLink is based on [LavaSrc](https://github.com/topi314/LavaSrc) by topi314 and community contributors.
+
+Changes in Sonara compared to PulseLink:
+- Renamed to Sonara (packages `com.github.vexify4103.sonara`, plugin `sonara-plugin`, config `plugins.sonara`).
+- LRCLIB synced lyrics without a space after the timestamp no longer fail the whole lyrics request.
+- Bundles a LavaLyrics build where one failing lyrics source no longer fails the whole lookup.
+- `spotify.resolvePlaylistUrl` loads Spotify-made playlists from an hfy resolver.
+- Credentials in `resolvePlaylistUrl` and `anonymousTokenUrl` are sent as a Basic Authorization header instead of in the request URL.

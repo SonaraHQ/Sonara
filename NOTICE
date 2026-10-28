@@ -1,0 +1,13 @@
+Sonara
+Copyright 2026 Vexify4103
+
+This product is a modified version of PulseLink
+(https://github.com/ItzRandom23/PulseLink) by ItzRandom23,
+licensed under the Apache License, Version 2.0.
+
+PulseLink is based on LavaSrc (https://github.com/topi314/LavaSrc)
+by topi314 and community contributors.
+
+Modifications by Vexify4103 include renaming the project to Sonara,
+fixes to LRCLIB lyrics parsing and lyrics error handling, and the
+spotify.resolvePlaylistUrl setting. See the Git history for details.

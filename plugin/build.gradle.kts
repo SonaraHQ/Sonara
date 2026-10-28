@@ -3,11 +3,11 @@ plugins {
 }
 
 base {
-	archivesName = "pulselink-plugin"
+	archivesName = "sonara-plugin"
 }
 
 lavalinkPlugin {
-	name = "pulselink-plugin"
+	name = "sonara-plugin"
 	apiVersion = "4.0.0"
 	serverVersion = "4.0.5"
 	configurePublishing = false
@@ -37,7 +37,7 @@ dependencies {
 tasks {
 	jar {
 		dependsOn(":main:jar", ":protocol:jar", ":protocol:jvmJar")
-		from(zipTree(project(":protocol").layout.buildDirectory.file("libs/pulselink-protocol-jvm-${project.version}.jar")))
+		from(zipTree(project(":protocol").layout.buildDirectory.file("libs/sonara-protocol-jvm-${project.version}.jar")))
 		exclude("dev/schlaubi/lyrics/LyricsClient*")
 		exclude("dev/schlaubi/lyrics/Lyrics_jvmKt.class")
 	}

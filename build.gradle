@@ -3,7 +3,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization" version "1.9.24" apply false
 }
 allprojects {
-    group = "com.github.itzrandom23.pulselink"
+    group = "com.github.vexify4103.sonara"
 
     repositories {
         mavenLocal()
@@ -23,7 +23,7 @@ subprojects {
     apply plugin: "java"
     apply plugin: "maven-publish"
 
-    def versionStr = "1.7.6-hambot"
+    def versionStr = "1.0.0"
     def isSnapshot = false
     version versionStr
     println "Version: " + versionStr

@@ -43,8 +43,8 @@ jobs:
       - name: Upload plugin Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PulseLink-Plugin.jar
-          path: plugin/build/libs/pulselink-plugin-*.jar
+          name: Sonara-Plugin.jar
+          path: plugin/build/libs/sonara-plugin-*.jar
 
   release:
     needs: build
@@ -57,12 +57,12 @@ jobs:
       - name: Download plugin Artifact
         uses: actions/download-artifact@v4
         with:
-          name: PulseLink-Plugin.jar
+          name: Sonara-Plugin.jar
 
       - name: Upload Artifacts to GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: pulselink-plugin-*.jar
+          artifacts: sonara-plugin-*.jar
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true

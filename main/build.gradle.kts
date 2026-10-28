@@ -5,7 +5,7 @@ plugins {
 }
 
 base {
-    archivesName = "pulselink"
+    archivesName = "sonara"
 }
 
 java {
