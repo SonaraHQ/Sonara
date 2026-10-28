@@ -42,11 +42,12 @@ plugins:
       # Optional. Your Sonara-API resolver (https://github.com/SonaraHQ/Sonara-API).
       # Loads all playlists, including Spotify-made ones (Daily Mix, Top 50, radios) that the Web API blocks,
       # and sprec: recommendations. Without it, user playlists still load through the Web API.
-      # Credentials in the URL (https://user:password@host) are sent as a Basic Authorization header.
-      # resolvePlaylistUrl: "https://user:password@your-sonara-api-host"
+      # Use the base URL; Sonara adds /playlist, /recommendations and /lyrics itself.
+      # resolvePlaylistUrl: "http://your-sonara-api-host:1500"
       # Optional. Anonymous Spotify token endpoint, for example Sonara-API's /spotifytoken.
       # Needed for album and artist mixes (sprec:mix:album:/sprec:mix:artist:), and used for the Web API when no clientId is set.
-      # anonymousTokenUrl: "https://user:password@your-sonara-api-host/spotifytoken"
+      # anonymousTokenUrl: "http://your-sonara-api-host:1500/spotifytoken"
+      # Behind a reverse proxy with a login, add it to both URLs (https://user:password@host); it is sent as a header, not logged.
       countryCode: "US"
       playlistLoadLimit: 6
       albumLoadLimit: 6

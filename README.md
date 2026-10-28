@@ -68,7 +68,7 @@ PORT=1500
 SPOTIFY_SP_DC=
 ```
 
-Run a single instance, since its token cache lives in memory. Sonara-API has no login of its own: keep its port private, or put it behind a reverse proxy with Basic authentication, and give Sonara that address. See the [Sonara-API README](https://github.com/SonaraHQ/Sonara-API#readme) for all settings and routes.
+Run a single instance, since its token cache lives in memory. Sonara-API has no login of its own, so do not expose its port to the internet: run it on the same machine or private network as Lavalink. See the [Sonara-API README](https://github.com/SonaraHQ/Sonara-API#readme) for all settings and routes.
 
 #### 3. Point Sonara at it
 
@@ -81,13 +81,13 @@ plugins:
       clientId: "your client id"
       clientSecret: "your client secret"
       # Base URL of your Sonara-API. Sonara adds /playlist, /recommendations and /lyrics itself.
-      resolvePlaylistUrl: "https://user:password@your-sonara-api-host"
-      anonymousTokenUrl: "https://user:password@your-sonara-api-host/spotifytoken"
+      resolvePlaylistUrl: "http://your-sonara-api-host:1500"
+      anonymousTokenUrl: "http://your-sonara-api-host:1500/spotifytoken"
       countryCode: "US"
 ```
 
 - With `clientId` / `clientSecret` set, Sonara uses Sonara-API's `/full` playlist and recommendation routes, which include ISRCs, so tracks mirror more reliably. The credentials are sent to Sonara-API as headers, never in the URL.
-- A login in a URL (`https://user:password@host`) is sent as a Basic Authorization header and removed from the request URL, so it does not show up in logs.
+- If you put Sonara-API behind a reverse proxy that asks for a login (Basic authentication), you can add the login to both URLs (`https://user:password@host`). Sonara sends it as an Authorization header and removes it from the request URL, so it does not show up in logs.
 - Without `clientId` / `clientSecret`, the Web API calls use the anonymous token from `anonymousTokenUrl` instead.
 
 ### Lyrics
