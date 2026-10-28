@@ -11,16 +11,16 @@ Sonara is a fork of [PulseLink](https://github.com/ItzRandom23/PulseLink), which
 ```yaml
 lavalink:
   plugins:
-    - dependency: "com.github.Vexify4103:Sonara:1.0.0"
+    - dependency: "com.github.SonaraHQ:Sonara:1.0.0"
       repository: "https://jitpack.io"
 ```
 
-2. Use [`application.example.yml`](https://github.com/Vexify4103/Sonara/blob/main/application.example.yml) as the full configuration reference.
+2. Use [`application.example.yml`](https://github.com/SonaraHQ/Sonara/blob/main/application.example.yml) as the full configuration reference.
 3. Start Lavalink.
 
 ## Configuration
 
-See [`application.example.yml`](https://github.com/Vexify4103/Sonara/blob/main/application.example.yml) for the current full example configuration.
+See [`application.example.yml`](https://github.com/SonaraHQ/Sonara/blob/main/application.example.yml) for the current full example configuration.
 
 ### Lyrics
 

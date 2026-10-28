@@ -62,6 +62,6 @@ jobs:
           context: .
           platforms: ${{ matrix.platforms }}
           push: true
-          tags: ghcr.io/vexify4103/sonara:${{ matrix.tag }}
+          tags: ghcr.io/sonarahq/sonara:${{ matrix.tag }}
           build-args: |
             TAG=${{ matrix.tag }}
