@@ -11,8 +11,12 @@ import com.sedmelluq.discord.lavaplayer.track.playback.LocalAudioTrackExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.nio.channels.ClosedByInterruptException;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +70,48 @@ public abstract class MirroringAudioTrack extends ExtendedAudioTrack {
 			}
 			return;
 		}
+		// When a mirror fails before any audio was played (for example Deezer refusing to stream it),
+		// the next provider is tried. Providers that were already tried are skipped by the resolver.
+		Exception playbackFailure = null;
+		var failedMirrors = new HashSet<String>();
+		while (true) {
+			InternalAudioTrack mirror;
+			try {
+				mirror = this.resolveMirror(ctx);
+			} catch (TrackNotFoundException e) {
+				if (playbackFailure != null) {
+					throw playbackFailure;
+				}
+				throw e;
+			}
+
+			var mirrorSource = mirror.getSourceManager() != null ? mirror.getSourceManager().getSourceName() : "unknown";
+			var mirrorKey = mirrorSource + ":" + mirror.getIdentifier();
+			if (failedMirrors.contains(mirrorKey)) {
+				throw playbackFailure;
+			}
+
+			mirror.setUserData(this.getUserData());
+			log.debug("Loaded track mirror from {} {}({}) ", mirrorSource, mirror.getInfo().title, mirror.getInfo().uri);
+
+			long startPosition = executor.getPosition();
+			try {
+				processDelegate(mirror, executor);
+				return;
+			} catch (Exception e) {
+				if (executor.getPosition() != startPosition || isInterruption(e) || ctx.isDeadlineExceeded()) {
+					throw e;
+				}
+				log.warn("[Mirror] Playback from {} failed for '{}' before any audio was played, trying the next provider: {}",
+					mirrorSource, this.trackInfo.title, e.getMessage());
+				executor.getAudioBuffer().clear();
+				failedMirrors.add(mirrorKey);
+				playbackFailure = e;
+			}
+		}
+	}
+
+	private InternalAudioTrack resolveMirror(MirrorResolutionContext ctx) {
 		var item = this.sourceManager.getResolver().apply(this, ctx);
 
 		if (item instanceof AudioPlaylist) {
@@ -76,16 +122,26 @@ public abstract class MirroringAudioTrack extends ExtendedAudioTrack {
 			item = tracks.get(0);
 		}
 		if (item instanceof InternalAudioTrack) {
-			((InternalAudioTrack) item).setUserData(this.getUserData());
-			var internalTrack = (InternalAudioTrack) item;
-			log.debug("Loaded track mirror from {} {}({}) ",
-				internalTrack.getSourceManager().getSourceName(),
-				internalTrack.getInfo().title,
-				internalTrack.getInfo().uri);
-			processDelegate(internalTrack, executor);
-			return;
+			return (InternalAudioTrack) item;
 		}
 		throw new TrackNotFoundException("No mirror found for track");
+	}
+
+	// stopping a track interrupts the playing thread, that must not be retried with another provider
+	private static boolean isInterruption(Throwable error) {
+		if (Thread.currentThread().isInterrupted()) {
+			return true;
+		}
+		for (var cause = error; cause != null; cause = cause.getCause()) {
+			if (cause instanceof InterruptedException || cause instanceof ClosedByInterruptException) {
+				return true;
+			}
+			if (cause instanceof InterruptedIOException && !(cause instanceof SocketTimeoutException)
+				&& (cause.getMessage() == null || !cause.getMessage().contains("timed out"))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
