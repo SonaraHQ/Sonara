@@ -27,6 +27,7 @@ public abstract class MirroringAudioTrack extends ExtendedAudioTrack {
 	private static final Logger log = LoggerFactory.getLogger(MirroringAudioTrack.class);
 
 	public static final Duration DEFAULT_PROVIDER_TIMEOUT = Duration.ofSeconds(15);
+	private static final int MAX_PLAYBACK_ATTEMPTS = 10;
 
 	protected final MirroringAudioSourceManager sourceManager;
 	protected MirrorResolutionContext resolutionContext;
@@ -74,7 +75,7 @@ public abstract class MirroringAudioTrack extends ExtendedAudioTrack {
 		// the next provider is tried. Providers that were already tried are skipped by the resolver.
 		Exception playbackFailure = null;
 		var failedMirrors = new HashSet<String>();
-		while (true) {
+		for (int attempt = 0; ; attempt++) {
 			InternalAudioTrack mirror;
 			try {
 				mirror = this.resolveMirror(ctx);
@@ -88,7 +89,11 @@ public abstract class MirroringAudioTrack extends ExtendedAudioTrack {
 			var mirrorSource = mirror.getSourceManager() != null ? mirror.getSourceManager().getSourceName() : "unknown";
 			var mirrorKey = mirrorSource + ":" + mirror.getIdentifier();
 			if (failedMirrors.contains(mirrorKey)) {
-				throw playbackFailure;
+				// another provider found the same track (dzisrc and dzsearch often do), so ask for the next one
+				if (attempt >= MAX_PLAYBACK_ATTEMPTS) {
+					throw playbackFailure;
+				}
+				continue;
 			}
 
 			mirror.setUserData(this.getUserData());
