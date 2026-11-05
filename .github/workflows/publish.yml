@@ -32,6 +32,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: external
 
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
