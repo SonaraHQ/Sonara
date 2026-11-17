@@ -165,7 +165,7 @@ Credentials and external requirements:
 
 Supported search prefixes:
 - Spotify: `spsearch:query` (up to 10 results)
-- Spotify recommendations: `sprec:mix:track:id` asks Sonara-API for one direct next-track recommendation, then falls back to Spotify's inspired-by mix; `sprec:mix:album:id` and `sprec:mix:artist:id` use the inspired-by mix; any other `sprec:` query is a Spotify track URL, URI or id sent to Sonara-API's recommendations.
+- Spotify recommendations: `sprec:mix:track:id` asks Sonara-API for 20 recommendations, and falls back to Spotify's inspired-by mix when Sonara-API is not set or has none; `sprec:mix:album:id` and `sprec:mix:artist:id` use the inspired-by mix; any other `sprec:` query is a Spotify track URL, URI or id sent to Sonara-API's recommendations.
 - Amazon Music: `amzsearch:query`
 - Apple Music: `amsearch:query`
 - Deezer: `dzsearch:query`
