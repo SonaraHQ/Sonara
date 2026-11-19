@@ -125,7 +125,7 @@ plugins:
 | Yandex Music | `yandexmusic` | depends | `yandexmusic.accessToken` |
 | VK Music | `vkmusic` | depends | `vkmusic.userToken` |
 
-Sonara bundles a LavaLyrics build in which one failing source no longer fails the whole lookup: the next source is asked instead, and a song without lyrics returns "no lyrics" instead of an error. LRCLIB and Genius search by the track's title and artist.
+Sonara bundles a LavaLyrics build in which one failing source no longer fails the whole lookup: the next source is asked instead, and a song without lyrics returns "no lyrics" instead of an error. Live lyrics also pick up again after a backwards seek. LRCLIB and Genius search by the track's title and artist.
 
 ## Providers and Mirroring
 
@@ -223,4 +223,4 @@ Changes in Sonara compared to PulseLink:
 - New lyrics sources: Genius (`lyrics-sources.genius`) and Spotify through Sonara-API (`lyrics-sources.spotify`).
 - Deezer lyrics work again: the request now sends the session cookies its token belongs to, instead of failing with "Invalid CSRF token".
 - LRCLIB synced lyrics without a space after the timestamp no longer fail the whole lyrics request.
-- Bundles a LavaLyrics build where one failing lyrics source no longer fails the whole lookup.
+- Bundles a LavaLyrics build where one failing lyrics source no longer fails the whole lookup, and live lyrics keep working after seeking backwards.
